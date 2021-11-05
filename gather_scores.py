@@ -39,6 +39,21 @@ def pretty_print(scores, sep='\t'):
         print(scores[task], end=sep)
 
 
+def gather_scores(path_to_glue_output):
+    scores = {}
+
+    for task in TASKS:
+        results_file = path_to_glue_output / task / 'all_results.json'
+        if results_file.exists():
+            y = get_score(results_file, METRIC_MAP[task])
+            scores[task] = y
+        else:
+            logging.warning(f" all_results.json for task '{task}' not found.")
+            scores[task] = float("NaN")
+
+    return scores
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -50,16 +65,7 @@ def main():
 
     path_to_glue_output = Path(args.path_to_glue_output)
 
-    scores = {}
-
-    for task in TASKS:
-        results_file = path_to_glue_output / task / 'all_results.json'
-        if results_file.exists():
-            y = get_score(results_file, METRIC_MAP[task])
-            scores[task] = y
-        else:
-            logging.warning(f" all_results.json for task '{task}' not found.")
-
+    scores = gather_scores(path_to_glue_output)
     pretty_print(scores)
 
 

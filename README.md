@@ -3,6 +3,8 @@
 Setup
 ```bash
 wget https://raw.githubusercontent.com/huggingface/transformers/master/examples/pytorch/text-classification/run_glue.py
+conda env create -f environment.yaml
+conda activate glue-utils
 ```
 
 Eval a model on every glue task:

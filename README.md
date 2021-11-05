@@ -1,4 +1,4 @@
-# Utils to quickly eval many 🤗models on the GLUE tasks
+# Utils to quickly evaluate many 🤗models on the GLUE tasks
 
 Setup
 ```bash
@@ -7,7 +7,7 @@ conda env create -f environment.yaml
 conda activate glue-utils
 ```
 
-Eval multiple models on every glue task:
+Evaluate multiple models on every glue task:
 ```bash
 python runner.py \
     path/to/model_1/ \
@@ -23,5 +23,5 @@ To quickly gather all results, run:
 python gather_scores.py \
     path/to/model_1/glue/ \
     path/to/model_2/glue/ \
-    path/to/model_3/glue/ \
+    path/to/model_3/glue/
 ```

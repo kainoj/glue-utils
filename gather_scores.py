@@ -38,12 +38,14 @@ def pretty_print(scores, sep='\t'):
     for task in TASKS:
         print(scores[task], end=sep)
 
+    print()
+
 
 def gather_scores(path_to_glue_output):
     scores = {}
 
     for task in TASKS:
-        results_file = path_to_glue_output / task / 'all_results.json'
+        results_file = Path(path_to_glue_output) / task / 'all_results.json'
         if results_file.exists():
             y = get_score(results_file, METRIC_MAP[task])
             scores[task] = y
@@ -57,16 +59,19 @@ def gather_scores(path_to_glue_output):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'path_to_glue_output',
-        help='GLUE path contains folders named by tasks names, each must '
-             'contain `all_results.json`'
+        'paths_to_glue_output',
+        nargs='+',
+        help='Paths to GLUE outputs, each path must contain directory named by'
+             ' tasks names and each task directory each must contain'
+             ' `all_results.json`.'
         )
     args = parser.parse_args()
 
-    path_to_glue_output = Path(args.path_to_glue_output)
-
-    scores = gather_scores(path_to_glue_output)
-    pretty_print(scores)
+    for path in args.paths_to_glue_output:
+        scores = gather_scores(path)
+        print(f"Scores for path:\n{path}")
+        pretty_print(scores)
+        print()
 
 
 if __name__ == '__main__':

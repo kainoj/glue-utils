@@ -2,6 +2,8 @@ import os
 import argparse
 
 from pathlib import Path
+from gather_scores import gather_scores, pretty_print
+
 
 # sorted by execution time
 TASKS = ['stsb', 'mrpc', 'cola', 'wnli', 'sst2', 'qnli', 'rte', 'qqp', 'mnli']
@@ -15,14 +17,16 @@ def run_glues(model_path, gpu_idx: str = '0'):
 
     print(f'Evaluating {model_path}.')
 
+    output_dir = model_path / "glue"
+
     for task in TASKS:
         print(f"Task: {task}")
 
-        output_dir = model_path / "glue" / task
+        output_dir_task = output_dir / task
 
         cmd = f"""\
         CUDA_VISIBLE_DEVICES={gpu_idx} python run_glue.py \
-            --model_name_or_path  {model_path} \
+            --model_name_or_path {model_path} \
             --task_name {task} \
             --do_train \
             --do_eval \
@@ -30,24 +34,41 @@ def run_glues(model_path, gpu_idx: str = '0'):
             --per_device_train_batch_size 32 \
             --learning_rate 2e-5 \
             --num_train_epochs 3 \
-            --output_dir {output_dir} \
+            --output_dir {output_dir_task} \
             --fp16
         """
         os.system(cmd)
 
+    return output_dir
+
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('model_path', help='Path to pre-trained model.')
+    parser.add_argument(
+        'model_paths',
+        nargs='+',
+        help='Path(s) to pre-trained model.'
+    )
     parser.add_argument(
         '--gpu_idx',
+        default='0',
         help='GPU index, as used in CUDA_VISIBLE_DEVICES.'
     )
 
     args = parser.parse_args()
-    run_glues(args.model_path, gpu_idx=args.gpu_idx)
 
-    print(f"Finished:\n{args.model_name}/glue")
+    glue_out_paths = []
+
+    for model_path in args.model_paths:
+        out_path = run_glues(model_path, gpu_idx=args.gpu_idx)
+        glue_out_paths.append(out_path)
+
+    print("\n========== Finished ==========\n")
+
+    for path in glue_out_paths:
+        scores = gather_scores(path)
+        print(f"\n\nModel:\n{path}")
+        pretty_print(scores)
 
 
 if __name__ == '__main__':

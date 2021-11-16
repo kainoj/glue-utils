@@ -25,3 +25,16 @@ python gather_scores.py \
     path/to/model_2/glue/ \
     path/to/model_3/glue/
 ```
+
+
+### Reproduce the environment
+If something goes wrong with the setup, follow these steps:
+
+```bash
+conda create --name py35 python=3.5
+conda activate glue
+conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
+pip install git+https://github.com/huggingface/transformers
+pip install "datasets>=1.8.0" scipy scikit-learn
+conda env export > environment.yaml 
+```

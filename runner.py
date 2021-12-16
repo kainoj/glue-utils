@@ -9,6 +9,23 @@ from gather_scores import gather_scores, pretty_print
 TASKS = ['stsb', 'mrpc', 'cola', 'wnli', 'sst2', 'qnli', 'rte', 'qqp', 'mnli']
 
 
+def run_glue(model_path, task, output_dir_task, gpu_idx):
+    cmd = f"""\
+        CUDA_VISIBLE_DEVICES={gpu_idx} python run_glue.py \
+            --model_name_or_path {model_path} \
+            --task_name {task} \
+            --do_train \
+            --do_eval \
+            --max_seq_length 128 \
+            --per_device_train_batch_size 32 \
+            --learning_rate 2e-5 \
+            --num_train_epochs 3 \
+            --output_dir {output_dir_task} \
+            --fp16
+        """
+    os.system(cmd)
+
+
 def run_glues(model_path, gpu_idx: str = '0'):
     model_path = Path(model_path)
 
@@ -23,21 +40,7 @@ def run_glues(model_path, gpu_idx: str = '0'):
         print(f"Task: {task}")
 
         output_dir_task = output_dir / task
-
-        cmd = f"""\
-        CUDA_VISIBLE_DEVICES={gpu_idx} python run_glue.py \
-            --model_name_or_path {model_path} \
-            --task_name {task} \
-            --do_train \
-            --do_eval \
-            --max_seq_length 128 \
-            --per_device_train_batch_size 32 \
-            --learning_rate 2e-5 \
-            --num_train_epochs 3 \
-            --output_dir {output_dir_task} \
-            --fp16
-        """
-        os.system(cmd)
+        run_glue(model_path, task, output_dir_task, gpu_idx)
 
     return output_dir
 

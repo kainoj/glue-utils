@@ -36,7 +36,7 @@ def pretty_print(scores, sep='\t'):
     print()
 
     for task in TASKS:
-        print(scores[task], end=sep)
+        print(scores[task] * 100.0, end=sep)
 
     print()
 

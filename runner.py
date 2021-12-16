@@ -9,13 +9,15 @@ from gather_scores import gather_scores, pretty_print
 TASKS = ['stsb', 'mrpc', 'cola', 'wnli', 'sst2', 'qnli', 'rte', 'qqp', 'mnli']
 
 
-def run_glue(model_path, task, output_dir_task, gpu_idx):
+def run_glue(model_path, task, output_dir_task, gpu_idx, do_train=True):
+
+    do_train_str = '--do_train' if do_train else ''
+
     cmd = f"""\
         CUDA_VISIBLE_DEVICES={gpu_idx} python run_glue.py \
             --model_name_or_path {model_path} \
             --task_name {task} \
-            --do_train \
-            --do_eval \
+            {do_train_str} --do_eval \
             --max_seq_length 128 \
             --per_device_train_batch_size 32 \
             --learning_rate 2e-5 \

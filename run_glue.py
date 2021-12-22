@@ -45,6 +45,9 @@ from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version
 from transformers.utils.versions import require_version
 
+# My custom stuff
+from load_from_pl_ckpt import load_patched_from_pl_ckpt
+
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.13.0.dev0")
@@ -183,6 +186,15 @@ class ModelArguments:
             "help": "Will use the token generated when running `transformers-cli login` (necessary to use this script "
             "with private models)."
         },
+    )
+    # My custom add-ons (for evaluating pruning)
+    is_pruned: bool = field(
+        default=False,
+        metadata={"help": "if true, sets some additional flags"}
+    )
+    freeze_pruning_scores: bool = field(
+        default=False,
+        metadata={"help": "freeze mask_scores?"}
     )
 
 
@@ -327,14 +339,27 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-    model = AutoModelForSequenceClassification.from_pretrained(
-        model_args.model_name_or_path,
-        from_tf=bool(".ckpt" in model_args.model_name_or_path),
-        config=config,
-        cache_dir=model_args.cache_dir,
-        revision=model_args.model_revision,
-        use_auth_token=True if model_args.use_auth_token else None,
-    )
+    if not model_args.is_pruned:
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_args.model_name_or_path,
+            from_tf=bool(".ckpt" in model_args.model_name_or_path),
+            config=config,
+            cache_dir=model_args.cache_dir,
+            revision=model_args.model_revision,
+            use_auth_token=True if model_args.use_auth_token else None,
+        )
+    else:
+        logger.info(f'Loading patched model from {model_args.model_name_or_path}')
+        model = load_patched_from_pl_ckpt(
+            pl_ckpt=model_args.model_name_or_path,
+            config=config,
+            device=training_args.device
+        )
+
+    if model_args.freeze_pruning_scores:
+        for name, param in model.bert.named_parameters():
+            if 'mask_scores' in name:
+                param.requires_grad = False
 
     # Preprocessing the raw_datasets
     if data_args.task_name is not None:
@@ -517,6 +542,12 @@ def main():
 
             trainer.log_metrics("eval", metrics)
             trainer.save_metrics("eval", metrics)
+
+    # Just for sanity
+    if model_args.freeze_pruning_scores:
+        for name, param in model.named_parameters():
+            if 'mask_scores' in name:
+                assert not param.requires_grad
 
     if training_args.do_predict:
         logger.info("*** Predict ***")

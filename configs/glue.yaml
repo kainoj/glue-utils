@@ -1,0 +1,31 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - datamodule: default.yaml
+  - model: null
+  - callbacks: null
+  - logger: null
+  - trainer: default.yaml
+  - log_dir: null
+  - experiment: null
+  - debug: null
+
+  # enable color logging
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+# path to original working directory
+original_work_dir: ${hydra:runtime.cwd}
+
+# disable python warnings if they annoy you
+ignore_warnings: True
+
+
+name: "default"
+
+do_train: True
+do_eval: True
+cache_dir: tmp/
+output_dir: tmp/${datamodule.task_name}
+seed: 42

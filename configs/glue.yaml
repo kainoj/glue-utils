@@ -5,10 +5,8 @@ defaults:
   - datamodule: default.yaml
   - model: automodel.yaml
   - task: mrpc.yaml
-  - callbacks: null
   - logger: tensorboard.yaml
   - trainer: default.yaml
-  - experiment: null
   - hydra: default.yaml
 
 # path to original working directory

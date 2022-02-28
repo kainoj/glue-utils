@@ -18,6 +18,8 @@ log = utils.get_logger(__name__)
 
 def run_glue(config):
 
+    if config.get("seed"):
+        seed_everything(config.seed, workers=True)
 
     # Init lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")

@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import token
 from typing import Optional
 
 from torch.utils.data import DataLoader
@@ -25,12 +26,14 @@ class GlueDataModule(LightningDataModule):
     def __init__(
         self,
         task_name: str,
+        tokenizer_name: str,
         max_seq_length: int,
         cache_dir: str,
         overwrite_cache: bool,
     ):
         super().__init__()
         self.task_name = task_name
+        self.tokenizer_name = tokenizer_name
         self.max_seq_length = max_seq_length
         self.cache_dir = cache_dir
         self.overwrite_cache = overwrite_cache
@@ -47,7 +50,7 @@ class GlueDataModule(LightningDataModule):
         load_dataset("glue", self.task_name, cache_dir=self.cache_dir)
 
     def setup(self, stage: Optional[str] = None):
-        self.tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
+        self.tokenizer = AutoTokenizer.from_pretrained(self.tokenizer_name)
         self.data = load_dataset("glue", self.task_name, cache_dir=self.cache_dir)
 
         self.data = self.data.map(

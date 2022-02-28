@@ -1,0 +1,9 @@
+_target_: src.glue_model.GlueModel
+
+model:
+  _target_: transformers.AutoModelForSequenceClassification.from_pretrained
+  pretrained_model_name_or_path: ${model_name}
+  num_labels: ${task.num_labels}
+
+learning_rate: 2e-5
+task_name: ${datamodule.task_name}

@@ -3,7 +3,8 @@
 defaults:
   - _self_
   - datamodule: default.yaml
-  - model: null
+  - model: automodel.yaml
+  - task: mrpc.yaml
   - callbacks: null
   - logger: null
   - trainer: default.yaml
@@ -21,11 +22,11 @@ original_work_dir: ${hydra:runtime.cwd}
 # disable python warnings if they annoy you
 ignore_warnings: True
 
-
 name: "default"
 
+model_name: bert-base-uncased
 do_train: True
 do_eval: True
-cache_dir: tmp/
-output_dir: tmp/${datamodule.task_name}
+cache_dir: ${original_work_dir}/tmp
+output_dir: ${original_work_dir}/tmp/${datamodule.task_name}
 seed: 42

@@ -10,8 +10,7 @@ from pytorch_lightning import (
 from pytorch_lightning.loggers import LightningLoggerBase
 
 from src import utils
-from src.glue_datamodule import GlueDataModule
-from src.glue_model import GlueModel
+
 
 log = utils.get_logger(__name__)
 
@@ -24,8 +23,8 @@ def run_glue(config):
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
 
     # Init lightning model
-    log.info(f"Instantiating model") # <{config.model._target_}>")
-    model: LightningModule = GlueModel() # hydra.utils.instantiate(config.model)
+    log.info(f"Instantiating model <{config.model._target_}>")
+    model: LightningModule = hydra.utils.instantiate(config.model)
 
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
     trainer: Trainer = hydra.utils.instantiate(config.trainer, callbacks=None, logger=None, _convert_="partial")

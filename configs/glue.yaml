@@ -14,9 +14,6 @@ defaults:
 work_dir: ${hydra:runtime.cwd}
 
 model_name: bert-base-uncased
-do_train: True
-do_eval: True
-cache_dir: ${work_dir}/cache
 seed: 42
 
 exp_name: ${model_name}/${task.task_name}

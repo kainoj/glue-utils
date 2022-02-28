@@ -28,6 +28,7 @@ class GlueDataModule(LightningDataModule):
         task_name: str,
         tokenizer_name: str,
         max_seq_length: int,
+        batch_size: int,
         cache_dir: str,
         overwrite_cache: bool,
     ):
@@ -35,6 +36,7 @@ class GlueDataModule(LightningDataModule):
         self.task_name = task_name
         self.tokenizer_name = tokenizer_name
         self.max_seq_length = max_seq_length
+        self.batch_size = batch_size
         self.cache_dir = cache_dir
         self.overwrite_cache = overwrite_cache
 
@@ -59,7 +61,6 @@ class GlueDataModule(LightningDataModule):
             load_from_cache_file=not self.overwrite_cache,
             desc="Running tokenizer on dataset",
         )
-
         self.data.set_format(type='torch', columns=['input_ids', 'token_type_ids', 'attention_mask', 'label'])
 
 
@@ -75,24 +76,10 @@ class GlueDataModule(LightningDataModule):
         return result
 
     def train_dataloader(self):
-        return DataLoader(self.data['train'], batch_size=32, collate_fn=default_data_collator)
+        return DataLoader(self.data['train'], batch_size=self.batch_size, collate_fn=default_data_collator)
 
     def val_dataloader(self):
-        pass
-        # return DataLoader(
-        #     dataset=self.data_val,
-        #     batch_size=self.hparams.batch_size,
-        #     num_workers=self.hparams.num_workers,
-        #     pin_memory=self.hparams.pin_memory,
-        #     shuffle=False,
-        # )
+       return DataLoader(self.data['validation'], batch_size=self.batch_size, collate_fn=default_data_collator)
 
     def test_dataloader(self):
         pass
-        # return DataLoader(
-        #     dataset=self.data_test,
-        #     batch_size=self.hparams.batch_size,
-        #     num_workers=self.hparams.num_workers,
-        #     pin_memory=self.hparams.pin_memory,
-        #     shuffle=False,
-        # )

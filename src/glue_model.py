@@ -1,11 +1,16 @@
+import torch
+
 from pytorch_lightning import LightningModule
 from transformers import AdamW
 from datasets import load_metric
+
 
 class GlueModel(LightningModule):
 
     def __init__(self, model, learning_rate, task_name) -> None:
         super().__init__()
+        self.save_hyperparameters(logger=False)
+
         self.model = model
         self.lr = learning_rate
         self.metric = load_metric("glue", task_name)
@@ -16,25 +21,33 @@ class GlueModel(LightningModule):
         return self.model(**inputs)
 
     def training_step(self, batch, batch_idx):
-        
+
         outputs = self.step(batch)
 
         loss = outputs.loss
 
-
         self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
 
-        # preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
-        # preds = torch.squeeze(preds) if self.is_regression else torch.argmax(preds, axis=1)
-    
-        # result = self.metric.compute(predictions=preds, references=p.label_ids)
-        # if len(result) > 1:
-        #     result["combined_score"] = torch.mean(list(result.values())).item()
-        
         return loss
 
     def validation_step(self, batch, batch_idx):
-        pass
+        outputs = self.step(batch)
+
+        loss = outputs.loss
+        logits = outputs.logits
+
+        preds = torch.squeeze(logits) if self.is_regression else torch.argmax(logits, axis=1)
+
+        result = self.metric.compute(predictions=preds, references=batch['labels'])
+        if len(result) > 1:
+            result["combined_score"] = torch.tensor(list(result.values())).mean().item()
+
+        for key, val in result.items():
+            self.log(f"val/{key}", val, on_step=False, on_epoch=True, prog_bar=False)
+
+        self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
+
+        return loss
 
     def configure_optimizers(self):
         # todo sscheduler

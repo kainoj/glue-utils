@@ -1,6 +1,5 @@
 from typing import List
 import hydra
-from omegaconf import DictConfig
 from pytorch_lightning import (
     Callback,
     LightningDataModule,
@@ -29,6 +28,14 @@ def run_glue(config):
     log.info(f"Instantiating model <{config.model._target_}>")
     model: LightningModule = hydra.utils.instantiate(config.model)
 
+    # Init lightning callbacks
+    callbacks: List[Callback] = []
+    if "callbacks" in config:
+        for _, cb_conf in config.callbacks.items():
+            if "_target_" in cb_conf:
+                log.info(f"Instantiating callback <{cb_conf._target_}>")
+                callbacks.append(hydra.utils.instantiate(cb_conf))
+
     # Init lightning loggers
     logger: List[LightningLoggerBase] = []
     if "logger" in config:
@@ -40,7 +47,7 @@ def run_glue(config):
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
     trainer: Trainer = hydra.utils.instantiate(
         config.trainer,
-        callbacks=None,
+        callbacks=callbacks,
         logger=logger,
         _convert_="partial"
     )

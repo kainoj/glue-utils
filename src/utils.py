@@ -1,7 +1,6 @@
 import logging
 from typing import Sequence
 
-import pytorch_lightning as pl
 import rich.syntax
 import rich.tree
 from omegaconf import DictConfig, OmegaConf
@@ -10,6 +9,7 @@ from pytorch_lightning.utilities import rank_zero_only
 """Copied from
 https://github.com/ashleve/lightning-hydra-template/blob/fb7c206889255faeeed671bf71f6160bae74e90f/src/utils
 """
+
 
 def get_logger(name=__name__) -> logging.Logger:
     """Initializes multi-GPU-friendly python command line logger."""

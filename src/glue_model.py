@@ -12,10 +12,7 @@ class GlueModel(LightningModule):
         self.task_name = task_name
         self.is_regression = self.task_name == "stsb"
 
-        print(model)
-
     def step(self, inputs):
-        print(inputs.keys())
         return self.model(**inputs)
 
     def training_step(self, batch, batch_idx):
@@ -23,6 +20,9 @@ class GlueModel(LightningModule):
         outputs = self.step(batch)
 
         loss = outputs.loss
+
+
+        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
 
         # preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         # preds = torch.squeeze(preds) if self.is_regression else torch.argmax(preds, axis=1)

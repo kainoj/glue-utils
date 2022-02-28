@@ -1,3 +1,4 @@
+from typing import List
 import hydra
 from omegaconf import DictConfig
 from pytorch_lightning import (
@@ -26,8 +27,21 @@ def run_glue(config):
     log.info(f"Instantiating model <{config.model._target_}>")
     model: LightningModule = hydra.utils.instantiate(config.model)
 
+    # Init lightning loggers
+    logger: List[LightningLoggerBase] = []
+    if "logger" in config:
+        for _, lg_conf in config.logger.items():
+            if "_target_" in lg_conf:
+                log.info(f"Instantiating logger <{lg_conf._target_}>")
+                logger.append(hydra.utils.instantiate(lg_conf))
+
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
-    trainer: Trainer = hydra.utils.instantiate(config.trainer, callbacks=None, logger=None, _convert_="partial")
+    trainer: Trainer = hydra.utils.instantiate(
+        config.trainer,
+        callbacks=None,
+        logger=logger,
+        _convert_="partial"
+    )
 
     log.info("Starting fine-tuning!")
     trainer.fit(model=model, datamodule=datamodule)

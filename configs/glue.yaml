@@ -7,7 +7,7 @@ defaults:
   - task: mrpc.yaml
   - logger: tensorboard.yaml
   - trainer: default.yaml
-  - callback: default.yaml
+  - callbacks: default.yaml
   - hydra: default.yaml
 
 # path to original working directory
